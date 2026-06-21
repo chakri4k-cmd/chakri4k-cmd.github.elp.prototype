@@ -1,0 +1,1523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ELP Gurukul | Prototype V3.1</title>
+  <style>
+    :root{
+      --bg:#06101b;
+      --bg2:#081424;
+      --panel:rgba(10,20,34,.92);
+      --panel2:rgba(255,255,255,.04);
+      --panel3:rgba(255,255,255,.06);
+      --line:rgba(255,255,255,.10);
+      --line2:rgba(205,174,105,.20);
+      --text:#eef4ff;
+      --muted:#aebbd2;
+      --accent:#6f96ff;
+      --accent2:#89d3ff;
+      --gold:#d7b46a;
+      --gold2:#f0ddb0;
+      --good:#67d7c1;
+      --danger:#ff7f97;
+      --shadow:0 24px 80px rgba(0,0,0,.40);
+      --radius:24px;
+      --radius2:18px;
+      --sidebar:300px;
+      --topbar:74px;
+      --max:1680px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:Inter,Segoe UI,Roboto,Arial,sans-serif;
+      background:
+        radial-gradient(circle at 0 0, rgba(111,150,255,.15), transparent 22%),
+        radial-gradient(circle at 100% 0, rgba(215,180,106,.10), transparent 18%),
+        linear-gradient(180deg, var(--bg2), var(--bg));
+      color:var(--text);
+      overflow-x:hidden;
+    }
+
+    button,input,textarea,select{font:inherit}
+    [contenteditable="true"]{outline:none}
+    a{color:inherit}
+
+    .login-screen{
+      min-height:100vh;
+      display:grid;
+      place-items:center;
+      padding:20px;
+      transition:opacity .28s ease, transform .28s ease;
+    }
+    .login-screen.fade-out{
+      opacity:0;
+      transform:translateY(-8px);
+      pointer-events:none;
+    }
+    .login-card{
+      width:min(540px,100%);
+      padding:28px;
+      border-radius:28px;
+      border:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(12,24,40,.98), rgba(7,12,20,.98));
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(16px);
+    }
+    .brand-row{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      margin-bottom:18px;
+    }
+    .logo-box{
+      width:58px;
+      height:58px;
+      border-radius:18px;
+      background:linear-gradient(135deg, rgba(111,150,255,.36), rgba(103,215,193,.28));
+      box-shadow:0 16px 40px rgba(111,150,255,.22);
+      overflow:hidden;
+      flex:0 0 auto;
+      display:grid;
+      place-items:center;
+      border:1px solid rgba(255,255,255,.10);
+    }
+    .logo-box img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+    .logo-fallback{
+      display:none;
+      width:100%;
+      height:100%;
+      place-items:center;
+      font-weight:800;
+      color:#fff;
+      letter-spacing:.02em;
+      font-size:14px;
+    }
+    .brand-title{
+      margin:0;
+      font-size:22px;
+      line-height:1.08;
+      font-weight:800;
+    }
+    .brand-sub{
+      margin:4px 0 0;
+      color:var(--muted);
+      font-size:13px;
+    }
+    .field{
+      display:grid;
+      gap:8px;
+      margin-top:14px;
+    }
+    .field label{
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.10em;
+      color:var(--muted);
+    }
+    .field input,.field textarea,.select{
+      width:100%;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      color:var(--text);
+      padding:13px 14px;
+    }
+
+    .login-actions,.toolbar,.pill-row,.dialog-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:center;
+    }
+    .btn{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      color:var(--text);
+      padding:11px 14px;
+      border-radius:14px;
+      cursor:pointer;
+      transition:.18s ease;
+    }
+    .btn:hover{transform:translateY(-1px);background:rgba(255,255,255,.07)}
+    .btn.primary{
+      background:linear-gradient(135deg, rgba(111,150,255,.20), rgba(103,215,193,.16));
+      border-color:rgba(111,150,255,.28);
+    }
+    .btn.soft{background:rgba(255,255,255,.03)}
+    .btn.danger{
+      background:rgba(255,127,151,.10);
+      border-color:rgba(255,127,151,.22);
+      color:#ffd7df;
+    }
+
+    .help{
+      margin-top:12px;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.6;
+    }
+
+    .app{
+      min-height:100vh;
+      display:none;
+      grid-template-columns:var(--sidebar) 1fr;
+    }
+    .app.ready{display:grid}
+
+    .sidebar{
+      padding:22px;
+      border-right:1px solid var(--line);
+      background:rgba(7,12,20,.82);
+      backdrop-filter:blur(18px);
+      position:sticky;
+      top:0;
+      height:100vh;
+      overflow:auto;
+      display:flex;
+      flex-direction:column;
+    }
+    .sidebar-brand{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      margin-bottom:18px;
+    }
+    .nav-title{
+      color:var(--muted);
+      font-size:12px;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      margin:18px 8px 10px;
+    }
+    .nav{
+      display:grid;
+      gap:10px;
+    }
+    .nav button{
+      width:100%;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+      color:var(--text);
+      border-radius:16px;
+      padding:14px;
+      text-align:left;
+      cursor:pointer;
+      transition:.18s ease;
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:center;
+    }
+    .nav button.active{
+      background:linear-gradient(135deg, rgba(111,150,255,.16), rgba(215,180,106,.10));
+      border-color:rgba(111,150,255,.24);
+    }
+    .nav small{
+      color:var(--muted);
+      white-space:nowrap;
+      font-size:12px;
+    }
+    .sidebar-footer{
+      margin-top:auto;
+      padding-top:18px;
+      border-top:1px solid var(--line);
+    }
+    .btn-logout{
+      width:100%;
+      border:1px solid rgba(255,127,151,.22);
+      background:rgba(255,127,151,.08);
+      color:#ffd7df;
+      border-radius:14px;
+      padding:12px 14px;
+      cursor:pointer;
+      transition:.18s ease;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-size:14px;
+    }
+    .btn-logout:hover{
+      background:rgba(255,127,151,.14);
+      transform:translateY(-1px);
+    }
+    .btn-logout svg{
+      flex:0 0 auto;
+      opacity:.7;
+    }
+
+    .main{
+      padding:24px;
+      display:grid;
+      gap:18px;
+      max-width:calc(var(--max) - var(--sidebar));
+      width:100%;
+    }
+
+    .topbar,.hero,.panel,.stat,.preview-box,.dialog,.intent-box,.section-shell{
+      box-shadow:var(--shadow);
+    }
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      gap:16px;
+      flex-wrap:wrap;
+      padding:14px 18px;
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:rgba(255,255,255,.03);
+    }
+    .chip{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      border-radius:999px;
+      padding:8px 12px;
+      font-size:12px;
+      cursor:pointer;
+      color:var(--text);
+    }
+    .chip.blue{background:rgba(111,150,255,.12);color:#c9d8ff;border-color:rgba(111,150,255,.18)}
+    .chip.gold{background:rgba(215,180,106,.13);color:var(--gold2);border-color:rgba(215,180,106,.18)}
+    .chip.navy{background:rgba(137,211,255,.10);color:#cfeeff;border-color:rgba(137,211,255,.18)}
+    .chip.gray{background:rgba(255,255,255,.05);color:var(--muted);border-color:rgba(255,255,255,.12)}
+
+    .hero{
+      padding:30px;
+      border-radius:var(--radius);
+      border:1px solid var(--line);
+      background:
+        radial-gradient(circle at top right, rgba(111,150,255,.12), transparent 28%),
+        linear-gradient(135deg, rgba(16,31,53,.98), rgba(8,15,28,.94));
+      position:relative;
+      overflow:hidden;
+    }
+    .hero:before{
+      content:'';
+      position:absolute;
+      inset:auto -10% -40% auto;
+      width:420px;
+      height:420px;
+      border-radius:50%;
+      background:radial-gradient(circle, rgba(215,180,106,.12), transparent 68%);
+      pointer-events:none;
+    }
+    .hero-head{
+      display:flex;
+      justify-content:space-between;
+      gap:18px;
+      align-items:flex-start;
+      flex-wrap:wrap;
+      position:relative;
+      z-index:1;
+    }
+    .hero-copy{flex:1 1 560px}
+    .hero h2{
+      margin:0 0 10px;
+      font-size:clamp(34px,4.1vw,58px);
+      line-height:1.02;
+      letter-spacing:-.03em;
+      max-width:12ch;
+      font-family:Georgia, 'Times New Roman', serif;
+      font-weight:700;
+    }
+    .hero p{margin:0;color:var(--muted);line-height:1.78;font-size:16px;max-width:72ch}
+
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:14px;
+    }
+    .stat{
+      padding:18px;
+      border-radius:20px;
+      border:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03));
+      min-height:112px;
+    }
+    .stat b{display:block;font-size:24px;margin-bottom:6px}
+    .stat span{color:var(--muted);font-size:13px;line-height:1.45}
+
+    .section-shell{
+      padding:20px;
+      border-radius:var(--radius);
+      border:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.03));
+    }
+    .section-head{
+      display:flex;
+      justify-content:space-between;
+      gap:16px;
+      align-items:flex-start;
+      flex-wrap:wrap;
+      margin-bottom:14px;
+    }
+    .section-head h3{
+      margin:0 0 6px;
+      font-size:22px;
+    }
+    .section-head p{
+      margin:0;
+      color:var(--muted);
+      line-height:1.68;
+      font-size:14px;
+      max-width:82ch;
+    }
+
+    .intent-box{
+      padding:20px;
+      border-radius:20px;
+      border:1px solid var(--line);
+      background:linear-gradient(135deg, rgba(16,31,53,.94), rgba(8,15,28,.92));
+      margin-bottom:14px;
+      position:relative;
+      overflow:hidden;
+    }
+    .intent-box:before{
+      content:'';
+      position:absolute;
+      right:-90px;
+      top:-90px;
+      width:240px;
+      height:240px;
+      border-radius:50%;
+      background:radial-gradient(circle, rgba(111,150,255,.14), transparent 68%);
+    }
+    .intent-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:16px;
+      margin-bottom:14px;
+      position:relative;
+      z-index:1;
+    }
+    .intent-kicker{
+      margin:0 0 6px;
+      color:var(--gold2);
+      font-size:12px;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      font-weight:700;
+    }
+    .intent-box h3{
+      margin:0 0 8px;
+      font-size:22px;
+    }
+    .intent-sub{
+      margin:0;
+      color:var(--muted);
+      line-height:1.68;
+      font-size:14px;
+      max-width:760px;
+    }
+    .intent-reset{
+      border:1px solid rgba(111,150,255,.25);
+      background:rgba(111,150,255,.12);
+      color:#dbe8ff;
+      padding:10px 14px;
+      border-radius:14px;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+    .intent-reset:hover{background:rgba(111,150,255,.18)}
+    .intent-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:12px;
+      position:relative;
+      z-index:1;
+    }
+    .intent-btn{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      align-items:flex-start;
+      width:100%;
+      text-align:left;
+      padding:16px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      color:var(--text);
+      cursor:pointer;
+      transition:.2s ease;
+    }
+    .intent-btn:hover{
+      transform:translateY(-1px);
+      background:rgba(255,255,255,.07);
+      border-color:rgba(255,255,255,.16);
+    }
+    .intent-btn strong{font-size:15px}
+    .intent-btn span{font-size:13px;color:var(--muted);line-height:1.5}
+
+    .panel{
+      padding:22px;
+      border-radius:var(--radius);
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      display:none;
+      position:relative;
+      overflow:hidden;
+    }
+    .panel.active{display:block}
+    .panel-head{
+      display:flex;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+      margin-bottom:12px;
+      align-items:flex-start;
+    }
+    .panel h3{margin:0;font-size:22px}
+    .panel p{margin:0 0 12px;color:var(--muted);line-height:1.72}
+
+    .grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+    .grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+
+    .card,.step{
+      padding:18px;
+      border-radius:18px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+      cursor:pointer;
+    }
+    .card{
+      transition:.18s ease;
+    }
+    .card:hover,.step:hover{transform:translateY(-1px);border-color:rgba(111,150,255,.24)}
+    .card h4,.step h4{margin:0 0 8px;font-size:16px}
+    .card p,.step p{margin:0;color:var(--muted);line-height:1.66}
+
+    .timeline{display:grid;gap:12px;margin-top:14px}
+    .step{
+      display:grid;
+      grid-template-columns:76px 1fr;
+      gap:14px;
+      align-items:start;
+    }
+    .num{
+      width:76px;height:76px;border-radius:18px;
+      display:grid;place-items:center;
+      font-size:20px;font-weight:800;
+      background:linear-gradient(135deg, rgba(111,150,255,.16), rgba(215,180,106,.14));
+      border:1px solid rgba(255,255,255,.10);
+    }
+
+    .footer{
+      color:var(--muted);
+      font-size:12px;
+      padding:4px 2px 6px;
+    }
+
+    .dialog-backdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.58);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+      z-index:60;
+      backdrop-filter:blur(8px);
+    }
+    .dialog-backdrop.open{display:flex}
+    .dialog{
+      width:min(1040px,100%);
+      max-height:min(90vh,920px);
+      overflow:auto;
+      border-radius:26px;
+      border:1px solid rgba(255,255,255,.12);
+      background:linear-gradient(180deg, rgba(12,24,40,.99), rgba(7,12,20,.99));
+    }
+    .dialog-header{
+      display:flex;
+      justify-content:space-between;
+      gap:16px;
+      align-items:flex-start;
+      padding:20px 20px 0;
+    }
+    .dialog-header h3{margin:0 0 6px;font-size:20px}
+    .dialog-header p{margin:0;color:var(--muted);line-height:1.6;font-size:14px}
+    .dialog-body{padding:18px 20px 20px}
+    .preview-box{
+      padding:18px;
+      border-radius:18px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+    }
+    .preview-box h4{margin:0 0 8px;font-size:18px}
+    .preview-box p{margin:0;color:var(--muted);line-height:1.7}
+    .modal-note{
+      margin-top:10px;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.55;
+    }
+
+    [data-editable="true"], [data-inline-title="true"], [data-inline-body="true"], [data-inline-step-title="true"], [data-inline-step-body="true"]{
+      transition:box-shadow .18s ease, background .18s ease, outline .18s ease;
+    }
+    .edit-mode [data-editable="true"],
+    .edit-mode [data-inline-title="true"],
+    .edit-mode [data-inline-body="true"],
+    .edit-mode [data-inline-step-title="true"],
+    .edit-mode [data-inline-step-body="true"]{
+      outline:2px dashed rgba(111,150,255,.48);
+      outline-offset:4px;
+      background:rgba(255,255,255,.02);
+      border-radius:12px;
+    }
+
+    @media (max-width: 1180px){
+      .app{grid-template-columns:1fr}
+      .sidebar{
+        position:relative;
+        height:auto;
+        border-right:none;
+        border-bottom:1px solid var(--line);
+      }
+      .main{max-width:none}
+      .stats,.grid-2,.grid-3{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .hero-head,.section-head{align-items:stretch}
+    }
+    @media (max-width: 720px){
+      .main{padding:14px}
+      .hero{padding:22px}
+      .hero h2{font-size:30px}
+      .stats,.grid-2,.grid-3,.intent-grid{grid-template-columns:1fr}
+      .step{grid-template-columns:1fr}
+      .num{width:58px;height:58px;border-radius:16px}
+      .topbar{flex-direction:column;align-items:flex-start}
+      .login-card{padding:22px}
+      .intent-head,.dialog-header,.hero-head,.panel-head,.section-head{
+        flex-direction:column;
+      }
+      .intent-reset{width:100%}
+    }
+  </style>
+</head>
+<body>
+  <section class="login-screen" id="loginScreen">
+    <div class="login-card">
+      <div class="brand-row">
+        <div class="logo-box" aria-label="ELP Gurukul logo">
+          <img id="loginLogo" src="https://static.wixstatic.com/media/1ef27a_1074c58ac9f9422ea04d6b81ace4e1a1~mv2.png/v1/crop/x_347,y_0,w_950,h_892/fill/w_264,h_226,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/Untitled.png" alt="Gurukul ELP logo" />
+          <div class="logo-fallback" id="loginLogoFallback">ELP</div>
+        </div>
+        <div>
+          <h1 class="brand-title">ELP Gurukul</h1>
+          <p class="brand-sub">Smart-era learning prototype</p>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="username">Username</label>
+        <input id="username" placeholder="group@elp" autocomplete="username" />
+      </div>
+
+      <div class="field">
+        <label for="password">Password</label>
+        <input id="password" type="password" placeholder="Password" autocomplete="current-password" />
+      </div>
+
+      <div class="login-actions" style="margin-top:16px">
+        <button class="btn primary" id="loginBtn" type="button">Sign in</button>
+        <button class="btn soft" id="demoBtn" type="button">Use demo credentials</button>
+      </div>
+
+      <div class="help" id="loginHelp">Enter username and password.</div>
+    </div>
+  </section>
+
+  <div class="app" id="app">
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="logo-box" aria-label="ELP Gurukul logo">
+          <img id="sideLogo" src="https://static.wixstatic.com/media/1ef27a_1074c58ac9f9422ea04d6b81ace4e1a1~mv2.png/v1/crop/x_347,y_0,w_950,h_892/fill/w_264,h_226,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/Untitled.png" alt="Gurukul ELP logo" />
+          <div class="logo-fallback" id="sideLogoFallback">ELP</div>
+        </div>
+        <div>
+          <h1 class="brand-title">ELP Gurukul</h1>
+        </div>
+      </div>
+
+      <div class="nav-title">Sections</div>
+      <div class="nav" role="tablist" aria-label="Prototype sections">
+        <button class="tab active" data-target="home" type="button">Home <small>Overview</small></button>
+        <button class="tab" data-target="mission" type="button">Mission <small>Core</small></button>
+        <button class="tab" data-target="learning" type="button">Learning <small>Programs</small></button>
+        <button class="tab" data-target="gaps" type="button">Gaps <small>Positioning</small></button>
+        <button class="tab" data-target="finance" type="button">Finance <small>Planning</small></button>
+        <button class="tab" data-target="platform" type="button">Platform <small>Digital</small></button>
+        <button class="tab" data-target="founding" type="button">Founding <small>Governance</small></button>
+        <button class="tab" data-target="execution" type="button">Execution <small>Blueprint</small></button>
+        <button class="tab" data-target="launch" type="button">Launch <small>Handbook</small></button>
+        <button class="tab" data-target="masterplan" type="button">Master Plan <small>Roadmap</small></button>
+      </div>
+
+      <div class="sidebar-footer">
+        <button class="btn-logout" id="logoutBtn" type="button" aria-label="Sign out">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          Sign out
+        </button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="pill-row">
+          <button class="chip blue" id="chipBrowser" type="button">Browser ready</button>
+          <button class="chip navy" id="chipResponsive" type="button">Responsive</button>
+          <button class="chip gold" id="chipAccess" type="button">Group access</button>
+        </div>
+        <div class="toolbar">
+          <button class="btn soft" id="addBtn" type="button">Add</button>
+          <button class="btn soft" id="draftBtn" type="button">Save draft</button>
+          <button class="btn soft" id="previewBtn" type="button">Preview</button>
+        </div>
+      </div>
+	<section class="section-shell" id="addComposer" style="display:none;">
+  <div class="section-head">
+    <div>
+      <h3>Add a new block</h3>
+      <p>Create a new card or timeline item without disturbing the current prototype.</p>
+    </div>
+    <div class="toolbar">
+      <button class="btn primary" type="button" id="composerInsertBtn">Insert block</button>
+      <button class="btn danger" type="button" id="composerCloseBtn">Close</button>
+    </div>
+  </div>
+
+<div class="card" style="margin-top:14px;">
+  <h4>How this works</h4>
+  <p>Type a title and body, then click Insert block. Save draft keeps your current state, Preview shows the current result, and Edit or Update lets you refine the section after insertion.</p>
+</div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h4>Title</h4>
+      <input id="composerTitle" type="text" placeholder="Enter block title" style="width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:inherit;outline:none;">
+    </div>
+    <div class="card">
+      <h4>Body</h4>
+      <textarea id="composerBody" placeholder="Enter block body" rows="5" style="width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:inherit;outline:none;resize:vertical;"></textarea>
+    </div>
+  </div>
+
+  <div class="card" id="composerPreview" style="margin-top:14px;">
+    <h4>Preview</h4>
+    <p id="composerPreviewText">The inserted block will appear here after you click Insert block.</p>
+  </div>
+</section>
+
+      <section class="intent-box">
+        <div class="intent-head">
+          <div>
+            <p class="intent-kicker">Start here</p>
+            <h3>What do you want to do?</h3>
+            <p class="intent-sub">Choose one path to jump straight into the part of the prototype that matches your purpose.</p>
+          </div>
+          <button class="intent-reset" id="resetHomeBtn" type="button">Reset to Home</button>
+        </div>
+        <div class="intent-grid">
+          <button class="intent-btn" data-target="mission" type="button">
+            <strong>Understand the vision</strong>
+            <span>Go to the Mission Core section.</span>
+          </button>
+          <button class="intent-btn" data-target="learning" type="button">
+            <strong>Review the learning structure</strong>
+            <span>Open the eight pillars of learning.</span>
+          </button>
+          <button class="intent-btn" data-target="gaps" type="button">
+            <strong>Check gaps and differentiation</strong>
+            <span>See positioning and uniqueness.</span>
+          </button>
+          <button class="intent-btn" data-target="finance" type="button">
+            <strong>See the financial plan</strong>
+            <span>Open the Rs. 200 Crore architecture.</span>
+          </button>
+          <button class="intent-btn" data-target="execution" type="button">
+            <strong>Review execution and launch</strong>
+            <span>Jump to the action roadmap.</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="hero">
+        <div class="hero-head">
+          <div class="hero-copy">
+            <h2 data-editable="true" contenteditable="false" id="heroTitle">Master Prototype for Group Browser Access</h2>
+            <p data-editable="true" contenteditable="false" id="heroBody">This interface combines blueprint content, working interactions, and review-friendly detail panels so the prototype feels like a living workspace.</p>
+          </div>
+          <div class="toolbar">
+            <button class="btn primary edit-section" type="button">Edit</button>
+            <button class="btn update-section" type="button">Update</button>
+            <button class="btn danger cancel-section" type="button">Cancel</button>
+          </div>
+        </div>
+        <div class="modal-note">Click the status chips or hero text to open their own explanation panels.</div>
+      </section>
+
+      <section class="stats">
+        <div class="stat"><b>10</b><span>Phases in the master build</span></div>
+        <div class="stat"><b>8</b><span>Learning pillars</span></div>
+        <div class="stat"><b>₹200 Cr</b><span>Financial vision</span></div>
+        <div class="stat"><b>Hyd</b><span>Founding base</span></div>
+      </section>
+
+      <section class="section-shell">
+        <div class="section-head">
+          <div>
+            <h3>What is this?</h3>
+            <p>A task-first prototype built to help users understand the institution blueprint quickly.</p>
+          </div>
+          <div class="toolbar">
+            <button class="btn primary edit-section" type="button">Edit</button>
+            <button class="btn update-section" type="button">Update</button>
+            <button class="btn danger cancel-section" type="button">Cancel</button>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="card tip" tabindex="0" data-title="Design intent" data-body="Clean, premium, app-like, and built for shared browser use." data-full="Make the interface calm, polished, and easy to scan. The goal is to feel like a software dashboard, not a document page.">
+            <h4>What is this?</h4>
+            <p>A task-first prototype built to help users understand the institution blueprint quickly.</p>
+          </div>
+          <div class="card tip" tabindex="0" data-title="Usage model" data-body="Open by URL, switch sections instantly, and review the blueprint in a browser." data-full="Open the prototype from a browser link, move between sections instantly, and review everything as a shared working space.">
+            <h4>What can I do next?</h4>
+            <p>Choose a task below to explore the vision, readiness, planning, or launch path.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="stats">
+        <div class="stat"><b>Browser</b><span>Shared review mode</span></div>
+        <div class="stat"><b>Premium</b><span>Navy-blue visual system</span></div>
+        <div class="stat"><b>2 Zones</b><span>Sidebar + main canvas</span></div>
+        <div class="stat"><b>Fresh</b><span>Rebuilt from scratch</span></div>
+      </section>
+
+      <section class="section-shell">
+        <section class="panel active" id="home">
+          <div class="panel-head">
+            <div>
+              <h3 data-editable="true" contenteditable="false">Start here</h3>
+              <p data-editable="true" contenteditable="false">This is the entry point for the prototype. It gives you a quick path into the most important tasks and helps you understand where to begin.</p>
+            </div>
+            <div class="toolbar">
+              <button class="btn primary edit-section" type="button">Edit</button>
+              <button class="btn update-section" type="button">Update</button>
+              <button class="btn danger cancel-section" type="button">Cancel</button>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="card tip" tabindex="0" data-title="Design intent" data-body="Clean, premium, app-like, and built for shared browser use." data-full="Make the interface calm, polished, and easy to scan. The goal is to feel like a software dashboard, not a document page.">
+              <h4>What is this?</h4>
+              <p>A task-first prototype built to help users understand the institution blueprint quickly.</p>
+            </div>
+            <div class="card tip" tabindex="0" data-title="Usage model" data-body="Open by URL, switch sections instantly, and review the blueprint in a browser." data-full="Open the prototype from a browser link, move between sections instantly, and review everything as a shared working space.">
+              <h4>What can I do next?</h4>
+              <p>Choose a task below to explore the vision, readiness, planning, or launch path.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" id="mission">
+          <div class="panel-head">
+            <div>
+              <h3 data-editable="true" contenteditable="false">Understand the vision</h3>
+              <p data-editable="true" contenteditable="false">This section explains the purpose, identity, and direction of the institution in simple terms.</p>
+            </div>
+            <div class="toolbar">
+              <button class="btn primary edit-section" type="button">Edit</button>
+              <button class="btn update-section" type="button">Update</button>
+              <button class="btn danger cancel-section" type="button">Cancel</button>
+            </div>
+          </div>
+          <div class="card tip" tabindex="0" data-title="Output" data-body="Mission statement, promise, values, and positioning language." data-full="Show the mission statement, promise, values, and positioning language in a short form on the page, then expand the detail in a panel.">
+            <h4>Why does it matter?</h4>
+            <p>It keeps founders, advisors, and future users aligned around one clear direction.</p>
+          </div>
+        </section>
+
+        <section class="panel" id="learning">
+          <div class="panel-head">
+            <div>
+              <h3 data-editable="true" contenteditable="false">See how it works</h3>
+              <p data-editable="true" contenteditable="false">This section shows how the learning model is structured and how the experience is organized.</p>
+            </div>
+            <div class="toolbar">
+              <button class="btn primary edit-section" type="button">Edit</button>
+              <button class="btn update-section" type="button">Update</button>
+              <button class="btn danger cancel-section" type="button">Cancel</button>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="card tip" tabindex="0" data-title="Program mapping" data-body="Applied learning, adventure, speed reading, guidance, mind mapping." data-full="Group the programs into outcomes, format, and participation model, then explain them in a compact review-friendly panel.">
+              <h4>What is this?</h4>
+              <p>A structured view of the learning model broken into outcomes and checkpoints.</p>
+            </div>
+            <div class="card tip" tabindex="0" data-title="Family role" data-body="Support the blueprint principle that the family enrolls together." data-full="Use the detail panel to explain how family participation works in the model without crowding the main page.">
+              <h4>What can I do next?</h4>
+              <p>Review how the learning structure supports the user journey and family involvement.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" id="gaps">
+          <div class="panel-head">
+            <div>
+              <h3 data-editable="true" contenteditable="false">Check readiness</h3>
+              <p data-editable="true" contenteditable="false">This section helps you see what is missing, what is unique, and what still needs to be improved.</p>
+            </div>
+            <div class="toolbar">
+              <button class="btn primary edit-section" type="button">Edit</button>
+              <button class="btn update-section" type="button">Update</button>
+              <button class="btn danger cancel-section" type="button">Cancel</button>
+            </div>
+          </div>
+          <div class="card tip" tabindex="0" data-title="Positioning goal" data-body="Make the institution feel necessary, distinct, and future ready." data-full="This card should stay brief on the page and expand into the fuller explanation when clicked.">
+            <h4>Why does it matter?</h4>
+            <p>It helps the team understand whether the prototype is ready to move forward.</p>
+          </div>
+        </section>
+
+        <section class="panel" id="finance">
+          <div class="panel-head">
+            <div>
+              <h3 data-editable="true" contenteditable="false">Review costs and funding</h3>
+              <p data-editable="true" contenteditable="false">This section explains the financial plan in stages so the budget is easier to understand and discuss.</p>
+            </div>
+            <div class="toolbar">
+              <button class="btn primary edit-section" type="button">Edit</button>
+              <button class="btn update-section" type="button">Update</button>
+              <button class="btn danger cancel-section" type="button">Cancel</button>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="card tip" tabindex="0" data-title="Capital layers" data-body="Land, facilities, staff, digital systems, scholarship support, and reserve planning." data-full="Use the panel to explain the cost layers in more detail, while the main card stays concise and readable.">
+              <h4>What is this?</h4>
+              <p>A staged view of the major cost layers that support the institution.</p>
+            </div>
+            <div class="card tip" tabindex="0" data-title="Phased funding" data-body="Stage the vision so each phase has measurable cost and progress logic." data-full="Break funding into stages so the prototype reads like an executable plan instead of a plain statement.">
+              <h4>What can I do next?</h4>
+              <p>Review the funding layers and identify what comes first.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" id="platform">
+          <div class="panel-head">
+            <div>
+              <h3 data-editable="true" contenteditable="false">Explore the platform</h3>
+              <p data-editable="true" contenteditable="false">This section shows how the browser-based experience supports the project.</p>
+            </div>
+            <div class="toolbar">
+              <button class="btn primary edit-section" type="button">Edit</button>
+              <button class="btn update-section" type="button">Update</button>
+              <button class="btn danger cancel-section" type="button">Cancel</button>
+            </div>
+          </div>
+          <div class="card tip" tabindex="0" data-title="Browser first" data-body="Accessible in any modern browser with no installation needed." data-full="Keep this as a short surface label and use the detail panel to explain how the platform evolves into a real working layer.">
+            <h4>Why does it matter?</h4>
+            <p>It connects the prototype design to the digital operating layer.</p>
+          </div>
+        </section>
+
+        <section class="panel" id="founding">
+          <div class="panel-head">
+            <div>
+              <h3 data-editable="true" contenteditable="false">Meet the founding circle</h3>
+              <p data-editable="true" contenteditable="false">This section explains who is involved, what they own, and how decisions are made.</p>
+            </div>
+            <div class="toolbar">
+              <button class="btn primary edit-section" type="button">Edit</button>
+              <button class="btn update-section" type="button">Update</button>
+              <button class="btn danger cancel-section" type="button">Cancel</button>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="card tip" tabindex="0" data-title="Governance" data-body="Roles, approvals, accountability, and strategic ownership." data-full="Use the panel to show decision flow and accountability in a richer but still controlled way.">
+              <h4>Why does it matter?</h4>
+              <p>It helps the group move with clarity and shared responsibility.</p>
+            </div>
+            <div class="card tip" tabindex="0" data-title="Participation" data-body="Use shared browser access for collective review and alignment." data-full="This card can explain how the founding circle works together without forcing long reading on the main page.">
+              <h4>What can I do next?</h4>
+              <p>Review roles and confirm who handles each decision.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" id="execution">
+          <div class="panel-head">
+            <div>
+              <h3 data-editable="true" contenteditable="false">Plan execution</h3>
+              <p data-editable="true" contenteditable="false">This section turns the prototype into action by showing tasks, milestones, and owners.</p>
+            </div>
+            <div class="toolbar">
+              <button class="btn primary edit-section" type="button">Edit</button>
+              <button class="btn update-section" type="button">Update</button>
+              <button class="btn danger cancel-section" type="button">Cancel</button>
+            </div>
+          </div>
+          <div class="timeline">
+            <div class="step tip" tabindex="0" data-step="1" data-title="Vision and identity" data-body="Set the mission, tone, and cultural basis." data-full="This first step defines what the institution stands for and how it should be perceived.">
+              <div class="num">1</div><div><h4>Define the vision</h4><p>Set the mission, tone, and cultural basis.</p></div>
+            </div>
+            <div class="step tip" tabindex="0" data-step="2" data-title="Learning architecture" data-body="Map the learning structure into measurable parts." data-full="This step defines how the curriculum is organized into clear components.">
+              <div class="num">2</div><div><h4>Map the learning plan</h4><p>Map the learning structure into measurable parts.</p></div>
+            </div>
+            <div class="step tip" tabindex="0" data-step="3" data-title="Gap positioning" data-body="Define the unique problem and solution." data-full="This step explains the market or institutional gap and the reason this blueprint exists.">
+              <div class="num">3</div><div><h4>Clarify the difference</h4><p>Define the unique problem and solution.</p></div>
+            </div>
+            <div class="step tip" tabindex="0" data-step="4" data-title="Family enrollment" data-body="Build family-based admission and onboarding." data-full="This step covers how families join the institution and how the onboarding sequence works.">
+              <div class="num">4</div><div><h4>Plan the family flow</h4><p>Build family-based admission and onboarding.</p></div>
+            </div>
+            <div class="step tip" tabindex="0" data-step="5" data-title="Financial structure" data-body="Stage the Rs. 200 Crore plan." data-full="This step should explain how funding is organized over time, what phases are covered, and how the group can read the plan without feeling overwhelmed.">
+              <div class="num">5</div><div><h4>Organize funding</h4><p>Stage the Rs. 200 Crore plan.</p></div>
+            </div>
+            <div class="step tip" tabindex="0" data-step="6" data-title="Digital layer" data-body="Enable browser-based access and operations." data-full="This step describes the software layer of the project and how the group will actually access and use it.">
+              <div class="num">6</div><div><h4>Set the platform layer</h4><p>Enable browser-based access and operations.</p></div>
+            </div>
+            <div class="step tip" tabindex="0" data-step="7" data-title="Founding circle" data-body="Define governance and decision rights." data-full="This step explains who is responsible for what and how decisions move through the group.">
+              <div class="num">7</div><div><h4>Assign governance</h4><p>Define governance and decision rights.</p></div>
+            </div>
+            <div class="step tip" tabindex="0" data-step="8" data-title="Execution planning" data-body="Assign actions, owners, and deadlines." data-full="This step turns the strategy into an actual action plan.">
+              <div class="num">8</div><div><h4>Set milestones</h4><p>Assign actions, owners, and deadlines.</p></div>
+            </div>
+            <div class="step tip" tabindex="0" data-step="9" data-title="Launch readiness" data-body="Prepare handbook, staffing, and checks." data-full="This step explains what needs to be ready before launch.">
+              <div class="num">9</div><div><h4>Prepare for launch</h4><p>Prepare handbook, staffing, and checks.</p></div>
+            </div>
+            <div class="step tip" tabindex="0" data-step="10" data-title="Master plan" data-body="Unify everything into one roadmap." data-full="This final step brings the whole blueprint together.">
+              <div class="num">10</div><div><h4>Unify the roadmap</h4><p>Unify everything into one roadmap.</p></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" id="launch">
+  <div class="panel-head">
+    <div>
+      <h3 data-editable="true" contenteditable="false">Prepare for launch</h3>
+      <p data-editable="true" contenteditable="false">This section serves as the final readiness checkpoint before the prototype is treated as launch-ready. It keeps the last-stage tasks visible and simple to review.</p>
+    </div>
+    <div class="toolbar">
+      <button class="btn primary edit-section" type="button">Edit</button>
+      <button class="btn update-section" type="button">Update</button>
+      <button class="btn danger cancel-section" type="button">Cancel</button>
+    </div>
+  </div>
+  <div class="card tip" tabindex="0" data-title="Launch output" data-body="Checklist, timeline, communications, and go-live readiness." data-full="Use the detail panel to show the launch sequence and keep the main view compact.">
+    <h4>What can I do next?</h4>
+    <p>Review the launch checklist and confirm what still needs to be completed.</p>
+  </div>
+</section>
+
+        <section class="panel" id="masterplan">
+  <div class="panel-head">
+    <div>
+      <h3 data-editable="true" contenteditable="false">View the master roadmap</h3>
+      <p data-editable="true" contenteditable="false">This section unifies the full institution blueprint into a single reference view. It is the top-level summary of direction, structure, and rollout.</p>
+    </div>
+    <div class="toolbar">
+      <button class="btn primary edit-section" type="button">Edit</button>
+      <button class="btn update-section" type="button">Update</button>
+      <button class="btn danger cancel-section" type="button">Cancel</button>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="card tip" tabindex="0" data-title="Scale" data-body="Expandable as the institution grows." data-full="Explain how the roadmap expands over time without making the page heavy.">
+      <h4>Why does it matter?</h4>
+      <p>It keeps the bigger vision organized as the prototype grows.</p>
+    </div>
+    <div class="card tip" tabindex="0" data-title="Continuity" data-body="Designed to stay useful after launch." data-full="This card can explain how the plan remains useful after launch as the institution grows.">
+      <h4>What can I do next?</h4>
+      <p>Use this as the top-level reference for the full build.</p>
+    </div>
+  </div>
+</section>
+
+      <div class="footer">ELP Gurukul · Hyderabad, India · 2026</div>
+    </main>
+  </div>
+
+  <div class="dialog-backdrop" id="dialogBackdrop" aria-hidden="true">
+    <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialogTitle">
+      <div class="dialog-header">
+        <div>
+          <h3 id="dialogTitle">Action</h3>
+          <p id="dialogDescription">Use this panel to understand the clicked item.</p>
+        </div>
+        <button class="btn" id="closeDialog" type="button">Close</button>
+      </div>
+      <div class="dialog-body" id="dialogBody"></div>
+    </div>
+  </div>
+
+<script>
+  const loginScreen = document.getElementById('loginScreen');
+  const app = document.getElementById('app');
+  const dialogBackdrop = document.getElementById('dialogBackdrop');
+  const dialogTitle = document.getElementById('dialogTitle');
+  const dialogDescription = document.getElementById('dialogDescription');
+  const dialogBody = document.getElementById('dialogBody');
+  const closeDialogBtn = document.getElementById('closeDialog');
+  const user = document.getElementById('username');
+  const pass = document.getElementById('password');
+  const loginHelp = document.getElementById('loginHelp');
+  const AUTH_KEY = 'elp_gurukul_logged_in_session';
+
+  let snapshot = '';
+  let editMode = false;
+
+  function safeSetSession(key, value) {
+    try { sessionStorage.setItem(key, value); return true; } catch (err) { return false; }
+  }
+
+  function safeGetSession(key) {
+    try { return sessionStorage.getItem(key); } catch (err) { return null; }
+  }
+
+  function safeRemoveSession(key) {
+    try { sessionStorage.removeItem(key); } catch (err) {}
+  }
+
+  function setLogoFallback(imgId, fallbackId) {
+    const img = document.getElementById(imgId);
+    const fb = document.getElementById(fallbackId);
+    if (!img || !fb) return;
+    img.onerror = () => {
+      img.style.display = 'none';
+      fb.style.display = 'grid';
+    };
+  }
+
+  setLogoFallback('loginLogo', 'loginLogoFallback');
+  setLogoFallback('sideLogo', 'sideLogoFallback');
+
+  function captureSnapshot() {
+    snapshot = app.innerHTML;
+  }
+
+  function restoreSnapshot() {
+    if (snapshot) {
+      app.innerHTML = snapshot;
+      bindApp();
+    }
+  }
+
+  function openDialog(title, description, bodyHtml) {
+    dialogTitle.textContent = title;
+    dialogDescription.textContent = description;
+    dialogBody.innerHTML = bodyHtml;
+    dialogBackdrop.classList.add('open');
+    dialogBackdrop.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeDialog() {
+    dialogBackdrop.classList.remove('open');
+    dialogBackdrop.setAttribute('aria-hidden', 'true');
+    dialogBody.innerHTML = '';
+  }
+
+  function setEditMode(enabled) {
+    editMode = enabled;
+    document.body.classList.toggle('edit-mode', enabled);
+    document.querySelectorAll('[data-editable="true"],[data-inline-title="true"],[data-inline-body="true"],[data-inline-step-title="true"],[data-inline-step-body="true"]').forEach(el => {
+      el.contentEditable = enabled ? 'true' : 'false';
+    });
+  }
+
+  function switchSection(targetId) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.target === targetId));
+    document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === targetId));
+    const target = document.getElementById(targetId);
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function browserChecks() {
+  return [
+    ['JavaScript support', typeof window !== 'undefined' && typeof document !== 'undefined'],
+    ['DOM query support', typeof document.querySelector === 'function'],
+    ['Session storage', typeof window.sessionStorage !== 'undefined'],
+    ['Viewport support', typeof window.matchMedia === 'function']
+  ];
+}
+
+function runtimeChecks() {
+  return [
+    ['Secure context', window.isSecureContext === true],
+    ['HTTPS protocol', location.protocol === 'https:'],
+    ['Online status', navigator.onLine]
+  ];
+}
+
+function loginFlowChecks() {
+  return [
+    ['Login screen visible', getComputedStyle(loginScreen).display !== 'none'],
+    ['App shell ready', app.classList.contains('ready')],
+    ['Logout wired', typeof document.getElementById('logoutBtn') !== 'undefined']
+  ];
+}
+
+function renderCheckList(items) {
+  return `
+    <ul style="margin:0;padding-left:18px;line-height:1.8;color:var(--muted)">
+      ${items.map(([label, ok]) => `<li>${label}: ${ok ? 'Pass' : 'Fail'}</li>`).join('')}
+    </ul>
+  `;
+}
+
+function openBrowserReadyPanel() {
+  const browser = browserChecks();
+  const runtime = runtimeChecks();
+  const flow = loginFlowChecks();
+  const onlineLabel = navigator.onLine ? 'Online' : 'Offline';
+  const secureLabel = window.isSecureContext ? 'Secure context' : 'Not secure context';
+
+  openDialog(
+    'Browser ready',
+    'Live compatibility and runtime status for this prototype.',
+    `
+      <div class="preview-box">
+        <h4>Browser compatibility</h4>
+        ${renderCheckList(browser)}
+      </div>
+      <div class="preview-box" style="margin-top:12px;">
+        <h4>Runtime state</h4>
+        <p>${onlineLabel} · ${secureLabel} · Protocol: ${location.protocol}</p>
+        ${renderCheckList(runtime)}
+      </div>
+      <div class="preview-box" style="margin-top:12px;">
+        <h4>Login flow status</h4>
+        ${renderCheckList(flow)}
+        <p class="modal-note">This panel confirms the prototype can show, hide, and re-open the login workspace correctly.</p>
+      </div>
+    `
+  );
+}
+
+  function showResponsivePanel() {
+    openDialog(
+      'Responsive support',
+      'Live compatibility and runtime status for this prototype.',
+      `
+        <div class="preview-box">
+          <h4>Responsive compatibility</h4>
+          <p>Viewport support: Pass. Layout reflow: Pass. Tap-friendly spacing: Pass. Mobile readability: Pass.</p>
+        </div>
+        <div class="preview-box">
+          <h4>Runtime state</h4>
+          <p>Sidebar adapts to narrow screens, panels stack vertically, and the main workflow stays usable on small displays.</p>
+        </div>
+        <div class="preview-box" style="margin-top:12px;">
+          <h4>Responsive behavior</h4>
+          <p>The sidebar collapses naturally and the main content stacks on small screens.</p>
+        </div>
+      `
+    );
+  }
+
+  function handleLogin() {
+    const u = user.value.trim();
+    const p = pass.value.trim();
+
+    if (!u || !p) {
+      loginHelp.textContent = 'Enter username and password.';
+      openDialog(
+        'Missing credentials',
+        'Please enter both fields.',
+        '<div class="preview-box"><h4>Missing credentials</h4><p>Please enter username and password.</p></div>'
+      );
+      return;
+    }
+
+    if (u === 'group@elp' && p === 'elp2026') {
+      safeSetSession(AUTH_KEY, '1');
+      loginScreen.classList.add('fade-out');
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          loginScreen.style.display = 'none';
+          app.classList.add('ready');
+          captureSnapshot();
+          bindApp();
+        }, 320);
+      });
+      return;
+    }
+
+    openDialog(
+      'Access denied',
+      'Use the shared demo credentials for this prototype.',
+      '<div class="preview-box"><h4>Try again</h4><p>Username: group@elp<br>Password: elp2026</p></div>'
+    );
+  }
+
+  function handleLogout() {
+    safeRemoveSession(AUTH_KEY);
+    editMode = false;
+    document.body.classList.remove('edit-mode');
+    app.classList.remove('ready');
+    loginScreen.style.display = 'grid';
+    loginScreen.classList.remove('fade-out');
+    pass.value = '';
+    loginHelp.textContent = 'You have been signed out.';
+    user.focus();
+    closeDialog();
+  }
+
+function bindApp() {
+  const resetHomeBtn = document.getElementById('resetHomeBtn');
+
+  document.querySelectorAll('.tab').forEach(btn => {
+    btn.onclick = () => switchSection(btn.dataset.target);
+  });
+
+  document.querySelectorAll('.intent-btn').forEach(btn => {
+    btn.onclick = () => switchSection(btn.dataset.target);
+  });
+
+  document.querySelectorAll('.tip').forEach(tip => {
+    tip.onclick = () => {
+      const title = tip.dataset.title || 'Details';
+      const body = tip.dataset.full || tip.dataset.body || '';
+      openDialog(title, 'Click Close to return to the page.', `<div class="preview-box"><h4>${title}</h4><p>${body}</p></div>`);
+    };
+  });
+
+  document.querySelectorAll('.edit-section').forEach(btn => {
+    btn.onclick = () => {
+      setEditMode(true);
+      openDialog('Edit section', 'This section is now editable.', '<div class="preview-box"><h4>Edit section</h4><p>Update text directly in the highlighted content blocks.</p></div>');
+    };
+  });
+
+  document.querySelectorAll('.update-section').forEach(btn => {
+    btn.onclick = () => {
+      captureSnapshot();
+      openDialog('Section updated', 'Your current changes are saved in this session.', '<div class="preview-box"><h4>Updated</h4><p>The current changes have been captured for this session.</p></div>');
+    };
+  });
+
+  document.querySelectorAll('.cancel-section').forEach(btn => {
+    btn.onclick = () => {
+      restoreSnapshot();
+      setEditMode(false);
+    };
+  });
+
+  if (resetHomeBtn) {
+    resetHomeBtn.onclick = () => switchSection('home');
+  }
+
+  const logoutBtn = document.getElementById('logoutBtn');
+  const loginBtn = document.getElementById('loginBtn');
+  const demoBtn = document.getElementById('demoBtn');
+  const chipBrowser = document.getElementById('chipBrowser');
+  const chipResponsive = document.getElementById('chipResponsive');
+  const chipAccess = document.getElementById('chipAccess');
+  const addBtn = document.getElementById('addBtn');
+  const draftBtn = document.getElementById('draftBtn');
+  const previewBtn = document.getElementById('previewBtn');
+  const addComposer = document.getElementById('addComposer');
+
+  if (addBtn) {
+    addBtn.onclick = () => {
+      if (addComposer) {
+        addComposer.style.display = 'block';
+        addComposer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      openDialog(
+        'Add content',
+        'Create a new card or timeline item.',
+        `
+          <div class="preview-box">
+            <h4>Add content</h4>
+            <p>Use the composer below to add a new block without changing the existing sections.</p>
+          </div>
+        `
+      );
+    };
+  }
+
+  const composerInsertBtn = document.getElementById('composerInsertBtn');
+  const composerCloseBtn = document.getElementById('composerCloseBtn');
+
+        if (composerInsertBtn) {
+    composerInsertBtn.onclick = () => {
+      const addComposer = document.getElementById('addComposer');
+      const titleInput = document.getElementById('composerTitle');
+      const bodyInput = document.getElementById('composerBody');
+
+      const title = (titleInput?.value || '').trim() || 'New block';
+      const body = (bodyInput?.value || '').trim() || 'This new block was added from the Insert block action.';
+
+      if (addComposer) {
+        const oldInserted = addComposer.querySelector('.inserted-block');
+        if (oldInserted) oldInserted.remove();
+
+        const inserted = document.createElement('div');
+        inserted.className = 'card inserted-block';
+        inserted.tabIndex = 0;
+        inserted.innerHTML = `
+          <h4>${title}</h4>
+          <p class="inserted-body">${body}</p>
+          <div class="toolbar inserted-actions" style="margin-top:12px;">
+            <button class="btn primary inserted-edit" type="button">Edit</button>
+            <button class="btn update-section inserted-update" type="button">Update</button>
+          </div>
+        `;
+
+        inserted.querySelector('.inserted-edit').onclick = () => {
+          if (titleInput) titleInput.focus();
+          openDialog(
+            'Edit block',
+            'You can revise the title and body before inserting again.',
+            `<div class="preview-box"><h4>${title}</h4><p>${body}</p></div>`
+          );
+        };
+
+        inserted.querySelector('.inserted-update').onclick = () => {
+          openDialog(
+            'Block updated',
+            'Your inserted block has been updated in this session.',
+            `<div class="preview-box"><h4>${title}</h4><p>${body}</p></div>`
+          );
+        };
+
+        inserted.onclick = (e) => {
+          if (e.target.closest('button')) return;
+          openDialog(
+            title,
+            body,
+            `<div class="preview-box"><h4>${title}</h4><p>${body}</p></div>`
+          );
+        };
+
+        addComposer.appendChild(inserted);
+
+        const previewText = document.getElementById('composerPreviewText');
+        if (previewText) {
+          previewText.textContent = `Inserted block created: ${title}`;
+        }
+      }
+
+      openDialog(
+        'Inserted',
+        'A new block was added to the prototype.',
+        `<div class="preview-box"><h4>${title}</h4><p>${body}</p></div>`
+      );
+    };
+  }
+
+  if (composerCloseBtn) {
+    composerCloseBtn.onclick = () => {
+      if (addComposer) addComposer.style.display = 'none';
+    };
+  }
+
+  if (logoutBtn) logoutBtn.onclick = handleLogout;
+  if (loginBtn) loginBtn.onclick = handleLogin;
+  if (demoBtn) {
+    demoBtn.onclick = () => {
+      user.value = 'group@elp';
+      pass.value = 'elp2026';
+      loginHelp.textContent = 'Demo credentials loaded.';
+      handleLogin();
+    };
+  }
+
+  if (chipBrowser) chipBrowser.onclick = openBrowserReadyPanel;
+  if (chipResponsive) chipResponsive.onclick = showResponsivePanel;
+  if (chipAccess) chipAccess.onclick = () => {
+    openDialog('Group access', 'Sharing status for the current prototype.', '<div class="preview-box"><h4>Group access</h4><p>This prototype is designed for shared browser review using the demo login flow.</p></div>');
+  };
+
+    if (draftBtn) draftBtn.onclick = () => {
+    captureSnapshot();
+    openDialog('Draft saved', 'Your current state is stored for this session.', '<div class="preview-box"><h4>Draft saved</h4><p>You can continue editing without losing changes.</p></div>');
+  };
+  if (previewBtn) previewBtn.onclick = () => {
+    const active = document.querySelector('.panel.active');
+    openDialog('Preview', 'Read-only preview of the current section.', `<div class="preview-box"><h4>${active?.querySelector('h3')?.innerText || 'Preview'}</h4><p>${active?.querySelector('p')?.innerText || ''}</p></div>`);
+  };
+}
+
+  closeDialogBtn.onclick = closeDialog;
+  dialogBackdrop.onclick = e => {
+    if (e.target === dialogBackdrop) closeDialog();
+  };
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && dialogBackdrop.classList.contains('open')) closeDialog();
+    if (e.key === 'Enter' && document.activeElement === user) handleLogin();
+    if (e.key === 'Enter' && document.activeElement === pass) handleLogin();
+  });
+
+  if (safeGetSession(AUTH_KEY) === '1') {
+    loginScreen.style.display = 'none';
+    app.classList.add('ready');
+  } else {
+    loginScreen.style.display = 'grid';
+  }
+
+  bindApp();
+function fillVisibleSection() {
+  const section = document.querySelector('.panel.active');
+  if (!section) return;
+
+  const title = section.querySelector('h3');
+  const body = section.querySelector('p');
+
+  if (title) title.innerText = 'Final content';
+  if (body) body.innerText = 'Replace this with the real finished copy for the next visible unfinished section. Keep it concise, complete, and ready for the prototype flow.';
+}
+
+fillVisibleSection();
+
+function polishPrototypeCopy() {
+  const title = document.querySelector('#heroTitle');
+  const body = document.querySelector('#heroBody');
+  const launchTitle = document.querySelector('#launch h3');
+  const launchBody = document.querySelector('#launch p');
+  const masterTitle = document.querySelector('#masterplan h3');
+  const masterBody = document.querySelector('#masterplan p');
+
+  if (title && title.innerText.trim() === 'Master Prototype for Group Browser Access') {
+    title.innerText = 'Master Prototype for Shared Browser Review';
+  }
+
+  if (body && body.innerText.includes('living workspace')) {
+    body.innerText = 'This interface combines blueprint content, working interactions, and review-friendly detail panels so the prototype feels complete and easy to scan.';
+  }
+
+  if (launchTitle && launchTitle.innerText.trim() === 'Prepare for launch') {
+    launchTitle.innerText = 'Prepare for launch';
+  }
+
+  if (launchBody && launchBody.innerText.includes('final readiness checkpoint')) {
+    launchBody.innerText = 'This section serves as the final readiness checkpoint before the prototype is treated as launch-ready. It keeps the last-stage tasks visible and simple to review.';
+  }
+
+  if (masterTitle && masterTitle.innerText.trim() === 'View the master roadmap') {
+    masterTitle.innerText = 'View the master roadmap';
+  }
+
+  if (masterBody && masterBody.innerText.includes('unifies the full institution blueprint')) {
+    masterBody.innerText = 'This section unifies the full institution blueprint into a single reference view. It is the top-level summary of direction, structure, and rollout.';
+  }
+}
+
+polishPrototypeCopy();
+</script></body>
+</html>
